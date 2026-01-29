@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الدليل التفاعلي: دليل الطالب لنيل المطالب</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Chosen Palette: Islamic Heritage (Warm Neutrals & Deep Green) -->
+    <!-- Application Structure Plan: 
+         1. Hero Section: Brief intro to the book and its status in the Madhhab.
+         2. Analytic Dashboard (Chart.js): Visualizing the "Complexity vs. Focus" of different commentaries to help students choose.
+         3. Interactive Editions Library: A filterable grid to compare physical prints (Tahqiq) based on features.
+         4. Explanations Explorer: A tabbed interface separating Classical vs. Contemporary explanations with audio/text indicators.
+         5. The "Advisor" Tool: A simple logic-based form to recommend a specific path based on the student's level.
+         Why this structure? Students often get overwhelmed by choices. This structure separates the "Text" (Matn) from the "Commentary" (Sharh) and uses data viz to make abstract differences concrete.
+    -->
+
+    <!-- Visualization & Content Choices:
+         1. Scatter Plot (Chart.js): Maps commentaries on X (Conciseness -> Detail) and Y (Focus on Wording -> Focus on Evidence). Goal: Compare.
+         2. Filterable Cards: For Editions. Goal: Inform & Organize.
+         3. Dynamic Accordions: For details of each book. Goal: Inform without clutter.
+         4. Recommendation Engine (JS): Goal: Guide/Engage.
+         5. NO SVG/Mermaid used. Unicode icons and CSS shapes used instead.
+    -->
+
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'heritage-dark': '#3E2723', // Dark Brown
+                        'heritage-gold': '#BCAAA4', // Muted Gold/Beige
+                        'heritage-green': '#2E7D32', // Islamic Green
+                        'heritage-paper': '#F9F7F2', // Old Paper
+                        'heritage-accent': '#C62828', // Red Ink
+                    },
+                    fontFamily: {
+                        'sans': ['Tajawal', 'sans-serif'],
+                        'serif': ['Amiri', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #F9F7F2;
+            color: #3E2723;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 400px;
+            max-height: 500px;
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(62, 39, 35, 0.1);
+        }
+        .tab-active {
+            border-bottom: 3px solid #2E7D32;
+            color: #2E7D32;
+            font-weight: 700;
+        }
+        .tab-inactive {
+            color: #8D6E63;
+        }
+    </style>
+</head>
+<body class="font-sans antialiased min-h-screen flex flex-col">
+
+    <!-- Header Section -->
+    <header class="bg-heritage-dark text-white shadow-lg relative overflow-hidden">
+        <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/arabesque.png')]"></div>
+        <div class="container mx-auto px-6 py-10 relative z-10 text-center">
+            <h1 class="text-4xl md:text-6xl font-serif font-bold mb-4 text-heritage-gold">دليل الطالب لنيل المطالب</h1>
+            <p class="text-xl md:text-2xl font-light text-gray-300 mb-6">المرجع التفاعلي الشامل للمتون والشروح والنسخ المعتمدة</p>
+            <div class="flex justify-center gap-4 flex-wrap">
+                <span class="bg-heritage-green px-4 py-1 rounded-full text-sm">الفقه الحنبلي</span>
+                <span class="bg-heritage-green px-4 py-1 rounded-full text-sm">مرعي الكرمي</span>
+                <span class="bg-heritage-green px-4 py-1 rounded-full text-sm">المتون المعتمدة</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="bg-white shadow sticky top-0 z-50">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-center md:justify-start overflow-x-auto whitespace-nowrap py-3 gap-6 text-lg">
+                <button onclick="switchSection('overview')" id="nav-overview" class="tab-active hover:text-heritage-green transition">نظرة عامة</button>
+                <button onclick="switchSection('editions')" id="nav-editions" class="tab-inactive hover:text-heritage-green transition">أفضل الطبعات</button>
+                <button onclick="switchSection('explanations')" id="nav-explanations" class="tab-inactive hover:text-heritage-green transition">خريطة الشروح</button>
+                <button onclick="switchSection('advisor')" id="nav-advisor" class="tab-inactive hover:text-heritage-green transition">المستشار الذكي</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Container -->
+    <main class="container mx-auto px-4 py-8 flex-grow">
+
+        <!-- SECTION: OVERVIEW & CHART -->
+        <section id="overview" class="block animate-fade-in">
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-8">
+                <!-- Text Content -->
+                <div class="md:col-span-4 bg-white p-6 rounded-xl shadow-sm border-t-4 border-heritage-green">
+                    <h2 class="text-2xl font-serif font-bold mb-4 text-heritage-dark">عن الكتاب</h2>
+                    <p class="mb-4 leading-relaxed text-gray-700">
+                        كتاب <strong>"دليل الطالب لنيل المطالب"</strong> للعلامة مرعي بن يوسف الكرمي (ت 1033هـ) هو أحد أهم المتون المعتمدة عند المتأخرين من الحنابلة.
+                    </p>
+                    <p class="mb-4 leading-relaxed text-gray-700">
+                        يتميز بحسن التقسيم، ووضوح العبارة، والاقتصار على القول الراجح في المذهب دون تشويش بذكر الخلاف، مما جعله محط أنظار العلماء والطلاب للحفظ والدراسة.
+                    </p>
+                    <div class="bg-heritage-paper p-4 rounded-lg border border-heritage-gold mt-6">
+                        <h3 class="font-bold text-heritage-dark mb-2">🎯 مكانته في السلم التعليمي</h3>
+                        <p class="text-sm">يأتي عادة بعد "أخصر المختصرات" وقبل "الروض المربع" أو "زاد المستقنع". مناسب للمبتدئ الجاد والمتوسط.</p>
+                    </div>
+                </div>
+
+                <!-- Visualization -->
+                <div class="md:col-span-8 bg-white p-6 rounded-xl shadow-sm">
+                    <div class="mb-4">
+                        <h2 class="text-2xl font-serif font-bold text-heritage-dark">خريطة الشروح التحليلية</h2>
+                        <p class="text-gray-500 text-sm">مقارنة بين الشروح بناءً على "عمق الطرح" و "التركيز على الدليل"</p>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <canvas id="commentaryChart"></canvas>
+                    </div>
+                    <div class="mt-4 text-center text-xs text-gray-500">
+                        اضغط على النقاط في الرسم البياني لرؤية التفاصيل
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Row -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
+                <div class="bg-white p-4 rounded-lg text-center shadow-sm">
+                    <div class="text-3xl font-bold text-heritage-green">400+</div>
+                    <div class="text-gray-600 text-sm">عام من الاعتماد</div>
+                </div>
+                <div class="bg-white p-4 rounded-lg text-center shadow-sm">
+                    <div class="text-3xl font-bold text-heritage-green">10+</div>
+                    <div class="text-gray-600 text-sm">شروح مطبوعة</div>
+                </div>
+                <div class="bg-white p-4 rounded-lg text-center shadow-sm">
+                    <div class="text-3xl font-bold text-heritage-green">3</div>
+                    <div class="text-gray-600 text-sm">طبعات محققة كبرى</div>
+                </div>
+                <div class="bg-white p-4 rounded-lg text-center shadow-sm">
+                    <div class="text-3xl font-bold text-heritage-green">∞</div>
+                    <div class="text-gray-600 text-sm">أجر وبركة للعلم</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION: EDITIONS (NUSAKH) -->
+        <section id="editions" class="hidden animate-fade-in">
+            <div class="mb-8 bg-white p-6 rounded-xl border-r-4 border-heritage-accent">
+                <h2 class="text-3xl font-serif font-bold text-heritage-dark mb-2">أفضل الطبعات (النسخ)</h2>
+                <p class="text-gray-600">اختيار النسخة الصحيحة هو نصف الطريق. النسخ المليئة بالأخطاء تشوش الفهم. هنا استعراض لأهم التحقيقات المتوفرة.</p>
+            </div>
+
+            <!-- Controls -->
+            <div class="flex gap-2 mb-6 overflow-x-auto pb-2">
+                <button onclick="filterEditions('all')" class="px-4 py-2 bg-heritage-dark text-white rounded-lg hover:bg-opacity-90">الكل</button>
+                <button onclick="filterEditions('student')" class="px-4 py-2 bg-white text-heritage-dark border border-heritage-dark rounded-lg hover:bg-gray-50">للطالب (مخدومة)</button>
+                <button onclick="filterEditions('academic')" class="px-4 py-2 bg-white text-heritage-dark border border-heritage-dark rounded-lg hover:bg-gray-50">للتحقيق (أكاديمية)</button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="editions-grid">
+                <!-- Content injected via JS -->
+            </div>
+        </section>
+
+        <!-- SECTION: EXPLANATIONS (SHURUH) -->
+        <section id="explanations" class="hidden animate-fade-in">
+            <div class="mb-8 bg-white p-6 rounded-xl border-r-4 border-heritage-green">
+                <h2 class="text-3xl font-serif font-bold text-heritage-dark mb-2">دليل الشروح</h2>
+                <p class="text-gray-600">ينقسم الشراح إلى قسمين: شراح المتن الأصليون (الحنابلة القدامى) والشراح المعاصرون (المسموعة والمكتوبة).</p>
+            </div>
+
+            <div class="flex flex-col md:flex-row gap-6">
+                <!-- Sidebar Filters -->
+                <div class="md:w-1/4 space-y-2">
+                    <div class="bg-white p-4 rounded-lg shadow-sm">
+                        <h3 class="font-bold text-lg mb-4 text-heritage-dark">تصنيف الشرح</h3>
+                        <label class="flex items-center space-x-2 space-x-reverse cursor-pointer mb-2">
+                            <input type="radio" name="shuruh-type" value="all" checked onclick="filterShuruh()" class="text-heritage-green focus:ring-heritage-green">
+                            <span>الكل</span>
+                        </label>
+                        <label class="flex items-center space-x-2 space-x-reverse cursor-pointer mb-2">
+                            <input type="radio" name="shuruh-type" value="classic" onclick="filterShuruh()" class="text-heritage-green focus:ring-heritage-green">
+                            <span>شروح تراثية (قديمة)</span>
+                        </label>
+                        <label class="flex items-center space-x-2 space-x-reverse cursor-pointer mb-2">
+                            <input type="radio" name="shuruh-type" value="contemporary" onclick="filterShuruh()" class="text-heritage-green focus:ring-heritage-green">
+                            <span>شروح معاصرة</span>
+                        </label>
+                        <label class="flex items-center space-x-2 space-x-reverse cursor-pointer">
+                            <input type="radio" name="shuruh-type" value="audio" onclick="filterShuruh()" class="text-heritage-green focus:ring-heritage-green">
+                            <span>شروح صوتية مميزة</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Results List -->
+                <div class="md:w-3/4 space-y-4" id="shuruh-list">
+                    <!-- Content injected via JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION: ADVISOR -->
+        <section id="advisor" class="hidden animate-fade-in">
+            <div class="max-w-2xl mx-auto bg-white p-8 rounded-2xl shadow-lg border-t-8 border-heritage-dark">
+                <h2 class="text-3xl font-serif font-bold text-center text-heritage-dark mb-6">المستشار الذكي 💡</h2>
+                <p class="text-center text-gray-600 mb-8">أجب عن الأسئلة التالية لنقترح عليك الخطة الأنسب لدراسة الكتاب.</p>
+
+                <div id="advisor-form">
+                    <div class="mb-6">
+                        <label class="block text-lg font-medium mb-3">ما هو مستواك الحالي؟</label>
+                        <select id="user-level" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-heritage-green outline-none">
+                            <option value="beginner">مبتدئ (أول متن فقهي لي)</option>
+                            <option value="intermediate">متوسط (درست أخصر المختصرات أو نحوه)</option>
+                            <option value="advanced">متقدم (أريد المراجعة والتدقيق)</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-6">
+                        <label class="block text-lg font-medium mb-3">ما هو هدفك الرئيسي؟</label>
+                        <select id="user-goal" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-heritage-green outline-none">
+                            <option value="understanding">فهم المسائل وتصويرها (فك العبارة)</option>
+                            <option value="evidence">معرفة الدليل والتعليل</option>
+                            <option value="memorization">الحفظ وضبط المتن</option>
+                        </select>
+                    </div>
+
+                    <button onclick="getRecommendation()" class="w-full bg-heritage-green text-white font-bold py-4 rounded-lg hover:bg-opacity-90 transition transform hover:scale-[1.02]">
+                        احصل على التوصية
+                    </button>
+                </div>
+
+                <div id="advisor-result" class="hidden mt-8 bg-heritage-paper p-6 rounded-xl border border-dashed border-heritage-dark">
+                    <h3 class="text-xl font-bold text-heritage-dark mb-2">التوصية المقترحة:</h3>
+                    <div id="recommendation-content" class="text-gray-800 space-y-3"></div>
+                    <button onclick="resetAdvisor()" class="mt-4 text-sm text-gray-500 underline">إعادة المحاولة</button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-heritage-dark text-heritage-gold py-6 mt-8">
+        <div class="container mx-auto px-4 text-center">
+            <p class="font-serif text-lg">"من يرد الله به خيراً يفقهه في الدين"</p>
+            <p class="text-sm mt-2 opacity-70">تم تصميم هذا الدليل لتسهيل طلب العلم - جميع الحقوق محفوظة لطلاب العلم</p>
+        </div>
+    </footer>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // --- DATA DATASETS ---
+
+        const editionsData = [
+            {
+                id: 1,
+                title: "طبعة نظر الفريابي",
+                publisher: "دار طيبة",
+                tags: ["student", "academic"],
+                features: ["دقة ضبط النص", "عناية فائقة بالتشكيل", "هوامش مفيدة للفروق"],
+                verdict: "تعتبر عند الكثيرين أجود الطبعات وأصحها نصاً.",
+                color: "green"
+            },
+            {
+                id: 2,
+                title: "طبعة سلطان العيد",
+                publisher: "دار ركائز",
+                tags: ["student"],
+                features: ["إخراج فني رائع", "مشجرة ومبوبة", "ألوان مساعدة للحفظ"],
+                verdict: "الأفضل لمن يريد الحفظ، مريحة جداً للعين.",
+                color: "blue"
+            },
+            {
+                id: 3,
+                title: "طبعة عبدالسلام الشويعر",
+                publisher: "دار ركائز (المتن)",
+                tags: ["student", "academic"],
+                features: ["تحقيق علمي رصين", "مقابلة على نسخ خطية نفيسة"],
+                verdict: "طبعة علمية محكمة يعتمد عليها.",
+                color: "heritage"
+            },
+            {
+                id: 4,
+                title: "طبعة المكتب الإسلامي",
+                publisher: "المكتب الإسلامي",
+                tags: ["classic"],
+                features: ["قديمة ومتداولة", "رخيصة الثمن"],
+                verdict: "جيدة ولكن النسخ الجديدة فاقتها في الخدمة والضبط.",
+                color: "gray"
+            }
+        ];
+
+        const shuruhData = [
+            {
+                id: 1,
+                title: "نيل المآرب بشرح دليل الطالب",
+                author: "التغلبي (تلميذ المؤلف)",
+                type: "classic",
+                desc: "الشرح المعتمد الذي يحل ألفاظ المتن بدقة دون استطراد.",
+                level: "متوسط"
+            },
+            {
+                id: 2,
+                title: "منار السبيل",
+                author: "ابن ضويان",
+                type: "classic",
+                desc: "أشهر الشروح المتأخرة، يتميز بذكر الدليل وتخريج الأحاديث.",
+                level: "متقدم"
+            },
+            {
+                id: 3,
+                title: "المعتمد في فقه الإمام أحمد",
+                author: "علي الهندي",
+                type: "classic",
+                desc: "حاشية وشرح مفيد جداً يجمع شوارد المذهب.",
+                level: "متقدم"
+            },
+            {
+                id: 4,
+                title: "الشرح الممتع (شرح صوتي مفرغ)",
+                author: "الشيخ محمد بن عثيمين",
+                type: "contemporary",
+                desc: "على منار السبيل، وهو مدرسة فقهية متكاملة في التعليل والترجيح.",
+                level: "متقدم"
+            },
+            {
+                id: 5,
+                title: "شرح الشيخ أحمد القعيمي",
+                author: "الشيخ أحمد القعيمي",
+                type: "audio",
+                desc: "شرح تحليلي دقيق جداً لكل لفظة، ممتاز للتأسيس المتين.",
+                level: "مبتدئ/متوسط"
+            },
+            {
+                id: 6,
+                title: "شرح الشيخ مطلق الجاسر",
+                author: "الشيخ مطلق الجاسر",
+                type: "audio",
+                desc: "شرح واضح وسلس، يركز على تصوير المسائل.",
+                level: "مبتدئ"
+            },
+            {
+                id: 7,
+                title: "شرح الشيخ محمد باجابر",
+                author: "الشيخ محمد باجابر",
+                type: "audio",
+                desc: "شرح تأصيلي يعتني بالمذهب والروايات.",
+                level: "متقدم"
+            }
+        ];
+
+        // --- NAVIGATION LOGIC ---
+        function switchSection(sectionId) {
+            // Hide all sections
+            ['overview', 'editions', 'explanations', 'advisor'].forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+                document.getElementById(`nav-${id}`).classList.remove('tab-active');
+                document.getElementById(`nav-${id}`).classList.add('tab-inactive');
+            });
+
+            // Show selected
+            document.getElementById(sectionId).classList.remove('hidden');
+            document.getElementById(`nav-${sectionId}`).classList.add('tab-active');
+            document.getElementById(`nav-${sectionId}`).classList.remove('tab-inactive');
+
+            // Trigger animations or specific logic if needed
+            if (sectionId === 'overview' && chartInstance) {
+                // Resize chart if needed
+            }
+        }
+
+        // --- EDITIONS RENDER LOGIC ---
+        function renderEditions(filter = 'all') {
+            const container = document.getElementById('editions-grid');
+            container.innerHTML = '';
+
+            const filtered = editionsData.filter(item => filter === 'all' || item.tags.includes(filter));
+
+            filtered.forEach(item => {
+                const card = document.createElement('div');
+                card.className = `bg-white rounded-xl shadow-md overflow-hidden card-hover border-t-4 border-${item.color === 'green' ? 'heritage-green' : item.color === 'blue' ? 'blue-600' : 'heritage-dark'}`;
+                card.innerHTML = `
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold text-gray-800 mb-1">${item.title}</h3>
+                        <p class="text-sm text-gray-500 mb-4">${item.publisher}</p>
+                        <div class="space-y-2 mb-4">
+                            ${item.features.map(f => `<div class="flex items-center text-sm text-gray-700"><span class="ml-2 text-heritage-green">✓</span>${f}</div>`).join('')}
+                        </div>
+                        <div class="bg-gray-50 p-3 rounded text-sm italic text-gray-600 border-r-2 border-heritage-gold">
+                            "${item.verdict}"
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function filterEditions(type) {
+            renderEditions(type);
+        }
+
+        // --- SHURUH RENDER LOGIC ---
+        function renderShuruh(filter = 'all') {
+            const container = document.getElementById('shuruh-list');
+            container.innerHTML = '';
+
+            const filtered = shuruhData.filter(item => filter === 'all' || item.type === filter || (filter === 'contemporary' && item.type === 'audio'));
+
+            filtered.forEach(item => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = "flex flex-col md:flex-row bg-white p-4 rounded-lg shadow-sm hover:bg-gray-50 transition border-r-4 " + (item.type === 'classic' ? 'border-heritage-dark' : 'border-heritage-accent');
+                
+                let icon = item.type === 'audio' ? '🎧' : '📖';
+                let typeLabel = item.type === 'classic' ? 'تراثي' : item.type === 'audio' ? 'صوتي' : 'معاصر';
+
+                itemDiv.innerHTML = `
+                    <div class="md:w-1/6 flex flex-col justify-center items-center text-3xl mb-3 md:mb-0 text-heritage-dark opacity-80">
+                        ${icon}
+                        <span class="text-xs font-sans font-bold mt-1">${typeLabel}</span>
+                    </div>
+                    <div class="md:w-5/6">
+                        <div class="flex justify-between items-start">
+                            <h4 class="text-lg font-bold text-gray-800">${item.title}</h4>
+                            <span class="bg-gray-100 text-xs px-2 py-1 rounded text-gray-600">${item.level}</span>
+                        </div>
+                        <p class="text-sm text-heritage-dark font-medium mb-1">${item.author}</p>
+                        <p class="text-sm text-gray-600">${item.desc}</p>
+                    </div>
+                `;
+                container.appendChild(itemDiv);
+            });
+        }
+
+        function filterShuruh() {
+            const selected = document.querySelector('input[name="shuruh-type"]:checked').value;
+            renderShuruh(selected);
+        }
+
+        // --- ADVISOR LOGIC ---
+        function getRecommendation() {
+            const level = document.getElementById('user-level').value;
+            const goal = document.getElementById('user-goal').value;
+            const resultDiv = document.getElementById('advisor-result');
+            const contentDiv = document.getElementById('recommendation-content');
+            
+            let recText = "";
+            let editionRec = "";
+            let explanationRec = "";
+
+            // Logic Tree
+            if (level === 'beginner') {
+                editionRec = "ننصحك بطبعة <b>سلطان العيد (دار ركائز)</b> لأنها مشجرة وملونة وتساعد على التصور والحفظ.";
+                explanationRec = "ابدأ بسماع شرح <b>الشيخ مطلق الجاسر</b> لسهولته، أو شرح <b>الشيخ أحمد القعيمي</b> إذا كنت تحب الدقة والتفصيل من البداية.";
+            } else if (level === 'intermediate') {
+                editionRec = "طبعة <b>نظر الفريابي</b> هي الأنسب لك لدقة ضبطها.";
+                if (goal === 'evidence') {
+                    explanationRec = "عليك بكتاب <b>منار السبيل</b> لابن ضويان، فهو يركز بشدة على الأدلة.";
+                } else {
+                    explanationRec = "طالع <b>نيل المآرب</b> لفك العبارة، واستمع لشرح <b>الشيخ محمد باجابر</b> للتأصيل.";
+                }
+            } else { // Advanced
+                editionRec = "يفضل اقتناء <b>طبعة اللبدي (المكتبة الإسلامية)</b> وعليها حاشية اللبدي لنفائسها.";
+                explanationRec = "دراسة <b>حاشية اللبدي</b> و <b>المعتمد</b>، ومقارنتها بما في <b>كشاف القناع</b>.";
+            }
+
+            contentDiv.innerHTML = `
+                <div class="mb-2">📚 <strong>النسخة:</strong> ${editionRec}</div>
+                <div>🎙️ <strong>الشرح:</strong> ${explanationRec}</div>
+            `;
+            
+            document.getElementById('advisor-form').classList.add('hidden');
+            resultDiv.classList.remove('hidden');
+        }
+
+        function resetAdvisor() {
+            document.getElementById('advisor-form').classList.remove('hidden');
+            document.getElementById('advisor-result').classList.add('hidden');
+        }
+
+        // --- CHART.JS INITIALIZATION ---
+        let chartInstance = null;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Init content
+            renderEditions();
+            renderShuruh();
+
+            // Init Chart
+            const ctx = document.getElementById('commentaryChart').getContext('2d');
+            
+            // Data points: x = Depth (Concise -> Detailed), y = Focus (Wording -> Evidence)
+            // Center (0,0) is balanced
+            const scatterData = [
+                { x: -0.8, y: -0.5, r: 10, label: "نيل المآرب", type: "فك عبارة" }, // Very concise, focuses on text
+                { x: 0.5, y: 0.9, r: 15, label: "منار السبيل", type: "أدلة" }, // Moderate detail, heavy on evidence
+                { x: 0.8, y: -0.2, r: 12, label: "حاشية اللبدي", type: "تدقيق فقهي" }, // High detail, focus on text logic
+                { x: 0.9, y: 0.7, r: 20, label: "الشرح الممتع", type: "تعليمي شامل" }, // Very detailed, high evidence
+                { x: -0.2, y: -0.2, r: 8, label: "المتن الأصلي", type: "المتن" }
+            ];
+
+            chartInstance = new Chart(ctx, {
+                type: 'bubble',
+                data: {
+                    datasets: [{
+                        label: 'الشروح',
+                        data: scatterData,
+                        backgroundColor: function(context) {
+                            const val = context.raw?.type;
+                            if(val === 'المتن') return '#3E2723';
+                            if(val === 'أدلة') return '#2E7D32';
+                            return 'rgba(188, 170, 164, 0.8)';
+                        },
+                        borderColor: '#3E2723',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.raw.label + " (" + context.raw.type + ")";
+                                }
+                            },
+                            bodyFont: { family: 'Tajawal' }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: { display: true, text: 'الإيجاز  <---------->  التفصيل والإطناب', font: { family: 'Tajawal' } },
+                            min: -1, max: 1.5,
+                            grid: { color: '#eee' }
+                        },
+                        y: {
+                            title: { display: true, text: 'حل الألفاظ  <---------->  ذكر الأدلة والتعليل', font: { family: 'Tajawal' } },
+                            min: -1, max: 1.5,
+                            grid: { color: '#eee' }
+                        }
+                    }
+                }
+            });
+        });
+
+    </script>
+</body>
+</html>
