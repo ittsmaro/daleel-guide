@@ -9,7 +9,7 @@
     <!-- Marked.js for Markdown parsing -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     
-    <!-- FONTS UPDATED HERE: Using Rubik for EVERYTHING -->
+    <!-- FONTS: Using Rubik for EVERYTHING -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -37,7 +37,7 @@
                     },
                     fontFamily: {
                         'sans': ['Rubik', 'sans-serif'], // Main font
-                        'serif': ['Rubik', 'sans-serif'], // Also Rubik (as requested)
+                        'serif': ['Rubik', 'sans-serif'], // Also Rubik
                     }
                 }
             }
@@ -434,8 +434,7 @@
     <script>
         
         // ==========================================
-        // هام جداً: ضع مفتاحك هنا ليعمل الموقع للجميع
-        // IMPORTANT: Paste your API Key inside the quotes below
+        // هام جداً: المفتاح الذي أضفته
         // ==========================================
         const apiKey = "AIzaSyDhkGFc13w2LdwutszfiSt9ggtTMKzuy6Y"; 
         // ==========================================
@@ -444,8 +443,8 @@
         // --- GEMINI API LOGIC ---
         async function callGeminiAPI(payload) {
             
-            if (!apiKey || apiKey === "AIzaSyDhkGFc13w2LdwutszfiSt9ggtTMKzuy6Y") {
-                alert("عذراً، لم يقم صاحب الموقع بوضع مفتاح API حتى الآن. يرجى مراجعة الكود.");
+            if (!apiKey) {
+                alert("عذراً، المفتاح مفقود.");
                 throw new Error("Missing API Key");
             }
 
@@ -464,6 +463,10 @@
                     if (!response.ok) {
                         const errText = await response.text();
                         console.error("Gemini API Error:", errText);
+                        // Show user friendly error for quota or auth issues
+                        if (response.status === 403 || response.status === 400) {
+                             throw new Error("خطأ في المفتاح أو الصلاحيات. تأكد من إعدادات المفتاح في جوجل.");
+                        }
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
                     
@@ -471,7 +474,10 @@
                     return data.candidates?.[0]?.content?.parts?.[0]?.text || null;
 
                 } catch (error) {
-                    if (error.message === "Missing API Key") throw error;
+                    if (error.message.includes("خطأ في المفتاح")) {
+                        alert(error.message);
+                        throw error;
+                    }
                     if (i === 5) throw error; // Rethrow after final attempt
                     await new Promise(r => setTimeout(r, delays[i]));
                 }
@@ -522,7 +528,7 @@
                     throw new Error("Empty response");
                 }
             } catch (error) {
-                resultDiv.innerHTML = `<span class="text-red-600 font-bold">عذراً، حدث خطأ في الاتصال. تأكد من أن مفتاح API صالح.</span>`;
+                resultDiv.innerHTML = `<span class="text-red-600 font-bold">عذراً، حدث خطأ في الاتصال. ${error.message}</span>`;
                 resultDiv.classList.remove('hidden');
                 console.error(error);
             } finally {
@@ -552,7 +558,7 @@
                 {
                     "question": "The question text in Arabic",
                     "options": ["Option 1 in Arabic", "Option 2 in Arabic", "Option 3 in Arabic", "Option 4 in Arabic"],
-                    "correctIndex": 0, (0-3 indicating the correct option)
+                    "correctIndex": 0,
                     "explanation": "A brief explanation of why this is the correct answer in Arabic"
                 }
                 Do not include markdown formatting like \`\`\`json. Just the raw JSON.
@@ -567,7 +573,18 @@
                 const responseText = await callGeminiAPI(payload);
                 if (!responseText) throw new Error("Empty response");
 
-                currentQuizData = JSON.parse(responseText);
+                // --- FIX: Clean response text before parsing ---
+                let cleanText = responseText.trim();
+                // Remove markdown code blocks if present
+                if (cleanText.startsWith('```json')) {
+                    cleanText = cleanText.replace(/^```json/, '').replace(/```$/, '');
+                } else if (cleanText.startsWith('```')) {
+                    cleanText = cleanText.replace(/^```/, '').replace(/```$/, '');
+                }
+                cleanText = cleanText.trim();
+                // -----------------------------------------------
+
+                currentQuizData = JSON.parse(cleanText);
 
                 // Render Quiz
                 topicDisplay.innerText = topic;
@@ -588,8 +605,8 @@
                 container.classList.remove('hidden');
 
             } catch (error) {
-                alert("عذراً، فشل توليد السؤال. يرجى التأكد من مفتاح API والمحاولة مرة أخرى.");
-                console.error(error);
+                console.error("Quiz Error:", error);
+                alert("عذراً، حدث خطأ في معالجة البيانات من الذكاء الاصطناعي. يرجى المحاولة مرة أخرى.");
             } finally {
                 loader.classList.add('hidden');
                 btnText.classList.remove('hidden');
@@ -911,4 +928,3 @@
     </script>
 </body>
 </html>
-
