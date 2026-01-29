@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>الدليل التفاعلي: دليل الطالب لنيل المطالب</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -14,16 +14,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     
-    <!-- Chosen Palette: Islamic Heritage (Warm Neutrals & Deep Green) -->
-    <!-- Application Structure Plan: 
-         1. Hero Section: Brief intro to the book.
-         2. Analytic Dashboard (Chart.js): Visualizing commentaries.
-         3. Interactive Editions Library: Filterable grid.
-         4. Explanations Explorer: Tabbed interface.
-         5. The "Advisor" Tool: Logic-based recommendations.
-         6. AI Tutor: Gemini API integration with HARDCODED Key for public use.
-    -->
-
     <script>
         tailwind.config = {
             theme: {
@@ -36,8 +26,11 @@
                         'heritage-accent': '#C62828', // Red Ink
                     },
                     fontFamily: {
-                        'sans': ['Rubik', 'sans-serif'], // Main font
-                        'serif': ['Rubik', 'sans-serif'], // Also Rubik
+                        'sans': ['Rubik', 'sans-serif'],
+                        'serif': ['Rubik', 'sans-serif'],
+                    },
+                    screens: {
+                        'xs': '475px', // Extra small screens support
                     }
                 }
             }
@@ -47,33 +40,34 @@
         body {
             background-color: #F9F7F2;
             color: #3E2723;
-            font-family: 'Rubik', sans-serif; /* Global Font Reset */
+            font-family: 'Rubik', sans-serif;
+            -webkit-font-smoothing: antialiased; /* Smoother fonts on iOS */
+            -moz-osx-font-smoothing: grayscale;
         }
-        /* Custom scrollbar for a cleaner look */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
+        
+        /* Hide scrollbar for Chrome, Safari and Opera */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
         }
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1; 
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #BCAAA4; 
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #8D6E63; 
+        /* Hide scrollbar for IE, Edge and Firefox */
+        .no-scrollbar {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
         }
 
+        /* Chart container responsive height */
         .chart-container {
             position: relative;
             width: 100%;
-            max-width: 800px;
             margin-left: auto;
             margin-right: auto;
-            height: 400px;
-            max-height: 500px;
         }
+        
+        /* Mobile Touch Improvements */
+        button, select, input, textarea {
+            touch-action: manipulation; /* Improves touch response */
+        }
+
         .card-hover {
             transition: all 0.3s ease;
         }
@@ -81,6 +75,7 @@
             transform: translateY(-5px);
             box-shadow: 0 10px 20px rgba(62, 39, 35, 0.1);
         }
+        
         .tab-active {
             border-bottom: 3px solid #2E7D32;
             color: #2E7D32;
@@ -89,7 +84,8 @@
         .tab-inactive {
             color: #8D6E63;
         }
-        /* Markdown Styles for AI Response */
+
+        /* Markdown Styles */
         .prose strong { color: #2E7D32; font-weight: 700; }
         .prose ul { list-style-type: disc; padding-right: 1.5rem; margin-top: 0.5rem; }
         .prose li { margin-bottom: 0.25rem; }
@@ -109,13 +105,13 @@
             100% { transform: rotate(360deg); }
         }
         
-        /* Quiz Option Styles */
         .quiz-option {
             transition: all 0.2s;
             cursor: pointer;
+            user-select: none; /* Prevent text selection on mobile tap */
         }
-        .quiz-option:hover {
-            background-color: #f3f4f6;
+        .quiz-option:active {
+            background-color: #e5e7eb; /* Instant feedback on tap */
         }
         .quiz-option.selected {
             border-color: #2E7D32;
@@ -138,26 +134,26 @@
     <!-- Header Section -->
     <header class="bg-heritage-dark text-white shadow-lg relative overflow-hidden">
         <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/arabesque.png')]"></div>
-        <div class="container mx-auto px-6 py-10 relative z-10 text-center">
-            <h1 class="text-4xl md:text-6xl font-black mb-4 text-heritage-gold tracking-wide">دليل الطالب لنيل المطالب</h1>
-            <p class="text-xl md:text-2xl font-light text-gray-300 mb-6">المرجع التفاعلي الشامل للمتون والشروح والنسخ المعتمدة</p>
-            <div class="flex justify-center gap-4 flex-wrap font-medium">
-                <span class="bg-heritage-green px-4 py-1 rounded-full text-sm shadow-md">الفقه الحنبلي</span>
-                <span class="bg-heritage-green px-4 py-1 rounded-full text-sm shadow-md">مرعي الكرمي</span>
-                <span class="bg-heritage-green px-4 py-1 rounded-full text-sm shadow-md">المتون المعتمدة</span>
+        <div class="container mx-auto px-4 md:px-6 py-8 md:py-10 relative z-10 text-center">
+            <h1 class="text-3xl sm:text-4xl md:text-6xl font-black mb-3 md:mb-4 text-heritage-gold tracking-wide leading-tight">دليل الطالب لنيل المطالب</h1>
+            <p class="text-lg md:text-2xl font-light text-gray-300 mb-6 max-w-2xl mx-auto">المرجع التفاعلي الشامل للمتون والشروح والنسخ المعتمدة</p>
+            <div class="flex justify-center gap-3 flex-wrap font-medium">
+                <span class="bg-heritage-green px-3 py-1 rounded-full text-xs md:text-sm shadow-md">الفقه الحنبلي</span>
+                <span class="bg-heritage-green px-3 py-1 rounded-full text-xs md:text-sm shadow-md">مرعي الكرمي</span>
+                <span class="bg-heritage-green px-3 py-1 rounded-full text-xs md:text-sm shadow-md">المتون المعتمدة</span>
             </div>
         </div>
     </header>
 
-    <!-- Navigation -->
-    <nav class="bg-white shadow sticky top-0 z-50 backdrop-blur-md bg-opacity-95">
+    <!-- Navigation (Sticky & Scrollable on Mobile) -->
+    <nav class="bg-white shadow sticky top-0 z-50 backdrop-blur-md bg-opacity-95 border-b border-gray-100">
         <div class="container mx-auto px-4">
-            <div class="flex justify-center md:justify-start overflow-x-auto whitespace-nowrap py-3 gap-6 text-lg no-scrollbar">
-                <button onclick="switchSection('overview')" id="nav-overview" class="tab-active hover:text-heritage-green transition px-2">نظرة عامة</button>
-                <button onclick="switchSection('editions')" id="nav-editions" class="tab-inactive hover:text-heritage-green transition px-2">أفضل الطبعات</button>
-                <button onclick="switchSection('explanations')" id="nav-explanations" class="tab-inactive hover:text-heritage-green transition px-2">خريطة الشروح</button>
-                <button onclick="switchSection('advisor')" id="nav-advisor" class="tab-inactive hover:text-heritage-green transition px-2">المستشار الذكي</button>
-                <button onclick="switchSection('aitutor')" id="nav-aitutor" class="tab-inactive hover:text-heritage-green transition px-2 flex items-center gap-1 font-bold text-heritage-green">
+            <div class="flex justify-start md:justify-center overflow-x-auto whitespace-nowrap py-3 gap-4 md:gap-8 text-base md:text-lg no-scrollbar">
+                <button onclick="switchSection('overview')" id="nav-overview" class="tab-active hover:text-heritage-green transition px-2 py-1 flex-shrink-0">نظرة عامة</button>
+                <button onclick="switchSection('editions')" id="nav-editions" class="tab-inactive hover:text-heritage-green transition px-2 py-1 flex-shrink-0">أفضل الطبعات</button>
+                <button onclick="switchSection('explanations')" id="nav-explanations" class="tab-inactive hover:text-heritage-green transition px-2 py-1 flex-shrink-0">خريطة الشروح</button>
+                <button onclick="switchSection('advisor')" id="nav-advisor" class="tab-inactive hover:text-heritage-green transition px-2 py-1 flex-shrink-0">المستشار الذكي</button>
+                <button onclick="switchSection('aitutor')" id="nav-aitutor" class="tab-inactive hover:text-heritage-green transition px-2 py-1 flex-shrink-0 flex items-center gap-1 font-bold text-heritage-green">
                      المعلم الذكي ✨
                 </button>
             </div>
@@ -165,34 +161,35 @@
     </nav>
 
     <!-- Main Content Container -->
-    <main class="container mx-auto px-4 py-8 flex-grow">
+    <main class="container mx-auto px-4 py-6 md:py-8 flex-grow">
 
         <!-- SECTION: OVERVIEW & CHART -->
         <section id="overview" class="block animate-fade-in">
-            <div class="grid grid-cols-1 md:grid-cols-12 gap-8">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8">
                 <!-- Text Content -->
-                <div class="md:col-span-4 bg-white p-6 rounded-xl shadow-sm border-t-4 border-heritage-green">
-                    <h2 class="text-2xl font-bold mb-4 text-heritage-dark">عن الكتاب</h2>
-                    <p class="mb-4 leading-relaxed text-gray-700 text-lg">
+                <div class="lg:col-span-4 bg-white p-5 md:p-6 rounded-xl shadow-sm border-t-4 border-heritage-green h-fit">
+                    <h2 class="text-xl md:text-2xl font-bold mb-4 text-heritage-dark">عن الكتاب</h2>
+                    <p class="mb-4 leading-relaxed text-gray-700 text-base md:text-lg text-justify">
                         كتاب <strong>"دليل الطالب لنيل المطالب"</strong> للعلامة مرعي بن يوسف الكرمي (ت 1033هـ) هو أحد أهم المتون المعتمدة عند المتأخرين من الحنابلة.
                     </p>
-                    <p class="mb-4 leading-relaxed text-gray-700 text-lg">
-                        يتميز بحسن التقسيم، ووضوح العبارة، والاقتصار على القول الراجح في المذهب دون تشويش بذكر الخلاف، مما جعله محط أنظار العلماء والطلاب للحفظ والدراسة.
+                    <p class="mb-4 leading-relaxed text-gray-700 text-base md:text-lg text-justify">
+                        يتميز بحسن التقسيم، ووضوح العبارة، والاقتصار على القول الراجح في المذهب دون تشويش بذكر الخلاف.
                     </p>
-                    <div class="bg-heritage-paper p-4 rounded-lg border border-heritage-gold mt-6">
-                        <h3 class="font-bold text-heritage-dark mb-2">🎯 مكانته في السلم التعليمي</h3>
-                        <p class="text-base">يأتي عادة بعد "أخصر المختصرات" وقبل "الروض المربع" أو "زاد المستقنع". مناسب للمبتدئ الجاد والمتوسط.</p>
+                    <div class="bg-heritage-paper p-4 rounded-lg border border-heritage-gold mt-4">
+                        <h3 class="font-bold text-heritage-dark mb-2 text-sm md:text-base">🎯 مكانته في السلم التعليمي</h3>
+                        <p class="text-sm md:text-base text-gray-800">يأتي عادة بعد "أخصر المختصرات" وقبل "الروض المربع". مناسب للمبتدئ الجاد والمتوسط.</p>
                     </div>
                 </div>
 
                 <!-- Visualization -->
-                <div class="md:col-span-8 bg-white p-6 rounded-xl shadow-sm">
+                <div class="lg:col-span-8 bg-white p-4 md:p-6 rounded-xl shadow-sm">
                     <div class="mb-4">
-                        <h2 class="text-2xl font-bold text-heritage-dark">خريطة الشروح التحليلية</h2>
-                        <p class="text-gray-500 text-sm">مقارنة بين الشروح بناءً على "عمق الطرح" و "التركيز على الدليل"</p>
+                        <h2 class="text-xl md:text-2xl font-bold text-heritage-dark">خريطة الشروح التحليلية</h2>
+                        <p class="text-gray-500 text-xs md:text-sm">مقارنة بين الشروح بناءً على "عمق الطرح" و "التركيز على الدليل"</p>
                     </div>
                     
-                    <div class="chart-container">
+                    <!-- Responsive height for chart container -->
+                    <div class="chart-container h-64 sm:h-80 md:h-96">
                         <canvas id="commentaryChart"></canvas>
                     </div>
                     <div class="mt-4 text-center text-xs text-gray-500">
@@ -202,78 +199,80 @@
             </div>
 
             <!-- Stats Row -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
-                <div class="bg-white p-4 rounded-lg text-center shadow-sm">
-                    <div class="text-3xl font-bold text-heritage-green">400+</div>
-                    <div class="text-gray-600 text-sm">عام من الاعتماد</div>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 md:gap-4 mt-6 md:mt-8">
+                <div class="bg-white p-4 rounded-lg text-center shadow-sm border-b-2 border-heritage-gold/20">
+                    <div class="text-2xl md:text-3xl font-bold text-heritage-green">400+</div>
+                    <div class="text-gray-600 text-xs md:text-sm">عام من الاعتماد</div>
                 </div>
-                <div class="bg-white p-4 rounded-lg text-center shadow-sm">
-                    <div class="text-3xl font-bold text-heritage-green">10+</div>
-                    <div class="text-gray-600 text-sm">شروح مطبوعة</div>
+                <div class="bg-white p-4 rounded-lg text-center shadow-sm border-b-2 border-heritage-gold/20">
+                    <div class="text-2xl md:text-3xl font-bold text-heritage-green">10+</div>
+                    <div class="text-gray-600 text-xs md:text-sm">شروح مطبوعة</div>
                 </div>
-                <div class="bg-white p-4 rounded-lg text-center shadow-sm">
-                    <div class="text-3xl font-bold text-heritage-green">3</div>
-                    <div class="text-gray-600 text-sm">طبعات محققة كبرى</div>
+                <div class="bg-white p-4 rounded-lg text-center shadow-sm border-b-2 border-heritage-gold/20">
+                    <div class="text-2xl md:text-3xl font-bold text-heritage-green">3</div>
+                    <div class="text-gray-600 text-xs md:text-sm">طبعات محققة</div>
                 </div>
-                <div class="bg-white p-4 rounded-lg text-center shadow-sm">
-                    <div class="text-3xl font-bold text-heritage-green">∞</div>
-                    <div class="text-gray-600 text-sm">أجر وبركة للعلم</div>
+                <div class="bg-white p-4 rounded-lg text-center shadow-sm border-b-2 border-heritage-gold/20">
+                    <div class="text-2xl md:text-3xl font-bold text-heritage-green">∞</div>
+                    <div class="text-gray-600 text-xs md:text-sm">أجر وبركة للعلم</div>
                 </div>
             </div>
         </section>
 
         <!-- SECTION: EDITIONS (NUSAKH) -->
         <section id="editions" class="hidden animate-fade-in">
-            <div class="mb-8 bg-white p-6 rounded-xl border-r-4 border-heritage-accent">
-                <h2 class="text-3xl font-bold text-heritage-dark mb-2">أفضل الطبعات (النسخ)</h2>
-                <p class="text-gray-600 text-lg">اختيار النسخة الصحيحة هو نصف الطريق. النسخ المليئة بالأخطاء تشوش الفهم. هنا استعراض لأهم التحقيقات المتوفرة.</p>
+            <div class="mb-6 md:mb-8 bg-white p-5 md:p-6 rounded-xl border-r-4 border-heritage-accent">
+                <h2 class="text-2xl md:text-3xl font-bold text-heritage-dark mb-2">أفضل الطبعات (النسخ)</h2>
+                <p class="text-gray-600 text-base md:text-lg">اختيار النسخة الصحيحة هو نصف الطريق. النسخ المليئة بالأخطاء تشوش الفهم.</p>
             </div>
 
-            <!-- Controls -->
-            <div class="flex gap-2 mb-6 overflow-x-auto pb-2">
-                <button onclick="filterEditions('all')" class="px-5 py-2 bg-heritage-dark text-white rounded-lg hover:bg-opacity-90 shadow-sm font-medium">الكل</button>
-                <button onclick="filterEditions('student')" class="px-5 py-2 bg-white text-heritage-dark border border-heritage-dark rounded-lg hover:bg-gray-50 font-medium">للطالب (مخدومة)</button>
-                <button onclick="filterEditions('academic')" class="px-5 py-2 bg-white text-heritage-dark border border-heritage-dark rounded-lg hover:bg-gray-50 font-medium">للتحقيق (أكاديمية)</button>
+            <!-- Controls (Scrollable on mobile) -->
+            <div class="flex gap-2 mb-6 overflow-x-auto pb-2 no-scrollbar">
+                <button onclick="filterEditions('all')" class="px-5 py-2.5 bg-heritage-dark text-white rounded-lg hover:bg-opacity-90 shadow-sm font-medium flex-shrink-0 whitespace-nowrap text-sm md:text-base">الكل</button>
+                <button onclick="filterEditions('student')" class="px-5 py-2.5 bg-white text-heritage-dark border border-heritage-dark rounded-lg hover:bg-gray-50 font-medium flex-shrink-0 whitespace-nowrap text-sm md:text-base">للطالب (مخدومة)</button>
+                <button onclick="filterEditions('academic')" class="px-5 py-2.5 bg-white text-heritage-dark border border-heritage-dark rounded-lg hover:bg-gray-50 font-medium flex-shrink-0 whitespace-nowrap text-sm md:text-base">للتحقيق (أكاديمية)</button>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="editions-grid">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6" id="editions-grid">
                 <!-- Content injected via JS -->
             </div>
         </section>
 
         <!-- SECTION: EXPLANATIONS (SHURUH) -->
         <section id="explanations" class="hidden animate-fade-in">
-            <div class="mb-8 bg-white p-6 rounded-xl border-r-4 border-heritage-green">
-                <h2 class="text-3xl font-bold text-heritage-dark mb-2">دليل الشروح</h2>
-                <p class="text-gray-600 text-lg">ينقسم الشراح إلى قسمين: شراح المتن الأصليون (الحنابلة القدامى) والشراح المعاصرون (المسموعة والمكتوبة).</p>
+            <div class="mb-6 md:mb-8 bg-white p-5 md:p-6 rounded-xl border-r-4 border-heritage-green">
+                <h2 class="text-2xl md:text-3xl font-bold text-heritage-dark mb-2">دليل الشروح</h2>
+                <p class="text-gray-600 text-base md:text-lg">ينقسم الشراح إلى قسمين: شراح المتن الأصليون (القدامى) والشراح المعاصرون.</p>
             </div>
 
-            <div class="flex flex-col md:flex-row gap-6">
+            <div class="flex flex-col lg:flex-row gap-6">
                 <!-- Sidebar Filters -->
-                <div class="md:w-1/4 space-y-2">
+                <div class="lg:w-1/4 space-y-2">
                     <div class="bg-white p-4 rounded-lg shadow-sm">
                         <h3 class="font-bold text-lg mb-4 text-heritage-dark">تصنيف الشرح</h3>
-                        <label class="flex items-center space-x-2 space-x-reverse cursor-pointer mb-2 p-2 hover:bg-gray-50 rounded">
-                            <input type="radio" name="shuruh-type" value="all" checked onclick="filterShuruh()" class="text-heritage-green focus:ring-heritage-green w-5 h-5">
-                            <span class="font-medium">الكل</span>
-                        </label>
-                        <label class="flex items-center space-x-2 space-x-reverse cursor-pointer mb-2 p-2 hover:bg-gray-50 rounded">
-                            <input type="radio" name="shuruh-type" value="classic" onclick="filterShuruh()" class="text-heritage-green focus:ring-heritage-green w-5 h-5">
-                            <span class="font-medium">شروح تراثية (قديمة)</span>
-                        </label>
-                        <label class="flex items-center space-x-2 space-x-reverse cursor-pointer mb-2 p-2 hover:bg-gray-50 rounded">
-                            <input type="radio" name="shuruh-type" value="contemporary" onclick="filterShuruh()" class="text-heritage-green focus:ring-heritage-green w-5 h-5">
-                            <span class="font-medium">شروح معاصرة</span>
-                        </label>
-                        <label class="flex items-center space-x-2 space-x-reverse cursor-pointer p-2 hover:bg-gray-50 rounded">
-                            <input type="radio" name="shuruh-type" value="audio" onclick="filterShuruh()" class="text-heritage-green focus:ring-heritage-green w-5 h-5">
-                            <span class="font-medium">شروح صوتية مميزة</span>
-                        </label>
+                        <div class="space-y-1">
+                            <label class="flex items-center space-x-2 space-x-reverse cursor-pointer p-3 hover:bg-gray-50 rounded-lg active:bg-gray-100 transition">
+                                <input type="radio" name="shuruh-type" value="all" checked onclick="filterShuruh()" class="text-heritage-green focus:ring-heritage-green w-5 h-5">
+                                <span class="font-medium mr-2">الكل</span>
+                            </label>
+                            <label class="flex items-center space-x-2 space-x-reverse cursor-pointer p-3 hover:bg-gray-50 rounded-lg active:bg-gray-100 transition">
+                                <input type="radio" name="shuruh-type" value="classic" onclick="filterShuruh()" class="text-heritage-green focus:ring-heritage-green w-5 h-5">
+                                <span class="font-medium mr-2">شروح تراثية</span>
+                            </label>
+                            <label class="flex items-center space-x-2 space-x-reverse cursor-pointer p-3 hover:bg-gray-50 rounded-lg active:bg-gray-100 transition">
+                                <input type="radio" name="shuruh-type" value="contemporary" onclick="filterShuruh()" class="text-heritage-green focus:ring-heritage-green w-5 h-5">
+                                <span class="font-medium mr-2">شروح معاصرة</span>
+                            </label>
+                            <label class="flex items-center space-x-2 space-x-reverse cursor-pointer p-3 hover:bg-gray-50 rounded-lg active:bg-gray-100 transition">
+                                <input type="radio" name="shuruh-type" value="audio" onclick="filterShuruh()" class="text-heritage-green focus:ring-heritage-green w-5 h-5">
+                                <span class="font-medium mr-2">شروح صوتية</span>
+                            </label>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Results List -->
-                <div class="md:w-3/4 space-y-4" id="shuruh-list">
+                <div class="lg:w-3/4 space-y-4" id="shuruh-list">
                     <!-- Content injected via JS -->
                 </div>
             </div>
@@ -281,110 +280,108 @@
 
         <!-- SECTION: ADVISOR -->
         <section id="advisor" class="hidden animate-fade-in">
-            <div class="max-w-2xl mx-auto bg-white p-8 rounded-2xl shadow-lg border-t-8 border-heritage-dark">
-                <h2 class="text-3xl font-bold text-center text-heritage-dark mb-6">المستشار الذكي 💡</h2>
-                <p class="text-center text-gray-600 mb-8 text-lg">أجب عن الأسئلة التالية لنقترح عليك الخطة الأنسب لدراسة الكتاب.</p>
+            <div class="max-w-2xl mx-auto bg-white p-6 md:p-8 rounded-2xl shadow-lg border-t-8 border-heritage-dark">
+                <h2 class="text-2xl md:text-3xl font-bold text-center text-heritage-dark mb-4">المستشار الذكي 💡</h2>
+                <p class="text-center text-gray-600 mb-8 text-base md:text-lg">أجب عن الأسئلة التالية لنقترح عليك الخطة الأنسب.</p>
 
                 <div id="advisor-form">
                     <div class="mb-6">
-                        <label class="block text-lg font-medium mb-3 text-heritage-dark">ما هو مستواك الحالي؟</label>
-                        <select id="user-level" class="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-heritage-green outline-none bg-gray-50 text-lg">
+                        <label class="block text-base md:text-lg font-medium mb-3 text-heritage-dark">ما هو مستواك الحالي؟</label>
+                        <select id="user-level" class="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-heritage-green outline-none bg-gray-50 text-base md:text-lg appearance-none">
                             <option value="beginner">مبتدئ (أول متن فقهي لي)</option>
-                            <option value="intermediate">متوسط (درست أخصر المختصرات أو نحوه)</option>
+                            <option value="intermediate">متوسط (درست أخصر المختصرات)</option>
                             <option value="advanced">متقدم (أريد المراجعة والتدقيق)</option>
                         </select>
                     </div>
 
                     <div class="mb-6">
-                        <label class="block text-lg font-medium mb-3 text-heritage-dark">ما هو هدفك الرئيسي؟</label>
-                        <select id="user-goal" class="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-heritage-green outline-none bg-gray-50 text-lg">
-                            <option value="understanding">فهم المسائل وتصويرها (فك العبارة)</option>
+                        <label class="block text-base md:text-lg font-medium mb-3 text-heritage-dark">ما هو هدفك الرئيسي؟</label>
+                        <select id="user-goal" class="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-heritage-green outline-none bg-gray-50 text-base md:text-lg appearance-none">
+                            <option value="understanding">فهم المسائل (فك العبارة)</option>
                             <option value="evidence">معرفة الدليل والتعليل</option>
                             <option value="memorization">الحفظ وضبط المتن</option>
                         </select>
                     </div>
 
-                    <button onclick="getRecommendation()" class="w-full bg-heritage-green text-white font-bold py-4 rounded-lg hover:bg-opacity-90 transition transform hover:scale-[1.02] shadow-md text-lg">
+                    <button onclick="getRecommendation()" class="w-full bg-heritage-green text-white font-bold py-4 rounded-lg hover:bg-opacity-90 transition transform active:scale-95 shadow-md text-lg">
                         احصل على التوصية
                     </button>
                 </div>
 
                 <div id="advisor-result" class="hidden mt-8 bg-heritage-paper p-6 rounded-xl border border-dashed border-heritage-dark">
                     <h3 class="text-xl font-bold text-heritage-dark mb-4">التوصية المقترحة:</h3>
-                    <div id="recommendation-content" class="text-gray-800 space-y-4 text-lg"></div>
-                    <button onclick="resetAdvisor()" class="mt-4 text-sm text-gray-500 underline hover:text-heritage-accent">إعادة المحاولة</button>
+                    <div id="recommendation-content" class="text-gray-800 space-y-4 text-base md:text-lg"></div>
+                    <button onclick="resetAdvisor()" class="mt-4 text-sm text-gray-500 underline hover:text-heritage-accent p-2">إعادة المحاولة</button>
                 </div>
             </div>
         </section>
 
         <!-- SECTION: AI TUTOR -->
         <section id="aitutor" class="hidden animate-fade-in">
-            <div class="mb-8 bg-white p-6 rounded-xl border-r-4 border-heritage-green flex flex-col md:flex-row justify-between items-center shadow-sm">
+            <div class="mb-6 md:mb-8 bg-white p-5 md:p-6 rounded-xl border-r-4 border-heritage-green flex flex-col md:flex-row justify-between items-start md:items-center shadow-sm gap-4">
                 <div>
-                    <h2 class="text-3xl font-bold text-heritage-dark mb-2">المعلم الفقهي الذكي ✨</h2>
-                    <p class="text-gray-600 text-lg">استخدم الذكاء الاصطناعي لفهم عبارات الكتاب الصعبة، أو للسؤال، أو لاختبار معلوماتك.</p>
+                    <h2 class="text-2xl md:text-3xl font-bold text-heritage-dark mb-2">المعلم الفقهي الذكي ✨</h2>
+                    <p class="text-gray-600 text-sm md:text-lg">استخدم الذكاء الاصطناعي لفهم عبارات الكتاب الصعبة أو للاختبار.</p>
                 </div>
-                <div class="mt-4 md:mt-0 flex flex-col items-end gap-2">
-                    <div class="bg-blue-50 text-blue-800 px-4 py-2 rounded-full text-xs font-bold border border-blue-200 shadow-sm">
-                        مدعوم بواسطة Gemini AI
-                    </div>
+                <div class="bg-blue-50 text-blue-800 px-4 py-2 rounded-full text-xs font-bold border border-blue-200 shadow-sm self-start md:self-auto">
+                    مدعوم بواسطة Gemini AI
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
                 
                 <!-- Tool 1: Phrase Explainer -->
                 <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 flex flex-col h-full">
                     <div class="bg-heritage-dark p-4 text-white">
-                        <h3 class="text-xl font-bold flex items-center gap-2">
+                        <h3 class="text-lg md:text-xl font-bold flex items-center gap-2">
                             <span>📖</span> شرح العبارة (فك الخط)
                         </h3>
                     </div>
-                    <div class="p-6 flex-grow flex flex-col">
-                        <p class="text-sm text-gray-500 mb-4">أدخل أي جملة صعبة من المتن (مثلاً: "ولا يصح وضوء بماء مغصوب") ليقوم المعلم بشرحها وتبسيطها.</p>
-                        <textarea id="ai-explain-input" class="w-full h-32 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-heritage-green outline-none mb-4 bg-gray-50 text-lg" placeholder="الصق نص المتن هنا..."></textarea>
-                        <button onclick="askGemini('explain')" class="w-full bg-heritage-green text-white font-bold py-3 rounded-lg hover:bg-opacity-90 transition flex justify-center items-center gap-2 mt-auto shadow-md">
+                    <div class="p-4 md:p-6 flex-grow flex flex-col">
+                        <p class="text-xs md:text-sm text-gray-500 mb-3">أدخل أي جملة صعبة من المتن ليقوم المعلم بشرحها.</p>
+                        <textarea id="ai-explain-input" class="w-full h-32 p-3 md:p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-heritage-green outline-none mb-4 bg-gray-50 text-base md:text-lg resize-none" placeholder="الصق نص المتن هنا..."></textarea>
+                        <button onclick="askGemini('explain')" class="w-full bg-heritage-green text-white font-bold py-3 md:py-4 rounded-lg hover:bg-opacity-90 active:scale-95 transition flex justify-center items-center gap-2 mt-auto shadow-md text-base md:text-lg">
                             <span id="btn-text-explain">اشرح لي العبارة</span>
                             <span id="loader-explain" class="loader hidden"></span>
                         </button>
                         
-                        <div id="result-explain" class="hidden mt-6 bg-heritage-paper p-5 rounded-lg border border-dashed border-heritage-dark prose text-gray-800 text-base leading-relaxed max-h-60 overflow-y-auto"></div>
+                        <div id="result-explain" class="hidden mt-6 bg-heritage-paper p-4 md:p-5 rounded-lg border border-dashed border-heritage-dark prose text-gray-800 text-sm md:text-base leading-relaxed max-h-60 overflow-y-auto"></div>
                     </div>
                 </div>
 
                 <!-- Tool 2: General Q&A -->
                 <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 flex flex-col h-full">
                     <div class="bg-heritage-gold p-4 text-heritage-dark">
-                        <h3 class="text-xl font-bold flex items-center gap-2">
+                        <h3 class="text-lg md:text-xl font-bold flex items-center gap-2">
                             <span>❓</span> المفتي الدراسي (سؤال وجواب)
                         </h3>
                     </div>
-                    <div class="p-6 flex-grow flex flex-col">
-                        <p class="text-sm text-gray-500 mb-4">اسأل عن أي حكم أو مسألة في "دليل الطالب". (مثلاً: "ما هي شروط الصلاة الستة؟")</p>
-                        <textarea id="ai-qa-input" class="w-full h-32 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-heritage-green outline-none mb-4 bg-gray-50 text-lg" placeholder="اكتب سؤالك الفقهي هنا..."></textarea>
-                        <button onclick="askGemini('qa')" class="w-full bg-heritage-dark text-white font-bold py-3 rounded-lg hover:bg-opacity-90 transition flex justify-center items-center gap-2 mt-auto shadow-md">
+                    <div class="p-4 md:p-6 flex-grow flex flex-col">
+                        <p class="text-xs md:text-sm text-gray-500 mb-3">اسأل عن أي حكم أو مسألة في "دليل الطالب".</p>
+                        <textarea id="ai-qa-input" class="w-full h-32 p-3 md:p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-heritage-green outline-none mb-4 bg-gray-50 text-base md:text-lg resize-none" placeholder="اكتب سؤالك الفقهي هنا..."></textarea>
+                        <button onclick="askGemini('qa')" class="w-full bg-heritage-dark text-white font-bold py-3 md:py-4 rounded-lg hover:bg-opacity-90 active:scale-95 transition flex justify-center items-center gap-2 mt-auto shadow-md text-base md:text-lg">
                             <span id="btn-text-qa">أرسل السؤال</span>
                             <span id="loader-qa" class="loader hidden"></span>
                         </button>
 
-                        <div id="result-qa" class="hidden mt-6 bg-blue-50 p-5 rounded-lg border border-blue-200 prose text-gray-800 text-base leading-relaxed max-h-60 overflow-y-auto"></div>
+                        <div id="result-qa" class="hidden mt-6 bg-blue-50 p-4 md:p-5 rounded-lg border border-blue-200 prose text-gray-800 text-sm md:text-base leading-relaxed max-h-60 overflow-y-auto"></div>
                     </div>
                 </div>
             </div>
 
             <!-- Tool 3: Smart Quiz -->
-            <div class="mt-8 bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
+            <div class="mt-6 md:mt-8 bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
                 <div class="bg-heritage-green p-4 text-white flex justify-between items-center">
-                    <h3 class="text-xl font-bold flex items-center gap-2">
-                        <span>📝</span> اختبر معلوماتك (مولد الأسئلة)
+                    <h3 class="text-lg md:text-xl font-bold flex items-center gap-2">
+                        <span>📝</span> اختبر معلوماتك
                     </h3>
                     <span class="bg-white text-heritage-green text-xs px-2 py-1 rounded font-bold shadow-sm">جديد ✨</span>
                 </div>
-                <div class="p-6">
+                <div class="p-4 md:p-6">
                     <div class="flex flex-col md:flex-row gap-4 items-end mb-4">
                         <div class="flex-grow w-full">
-                            <label class="block text-lg font-medium text-gray-700 mb-2">اختر الباب الفقهي:</label>
-                            <select id="quiz-topic" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-heritage-green outline-none bg-gray-50 text-lg">
+                            <label class="block text-base md:text-lg font-medium text-gray-700 mb-2">اختر الباب الفقهي:</label>
+                            <select id="quiz-topic" class="w-full p-3 md:p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-heritage-green outline-none bg-gray-50 text-base md:text-lg appearance-none">
                                 <option value="الطهارة">كتاب الطهارة</option>
                                 <option value="الصلاة">كتاب الصلاة</option>
                                 <option value="الزكاة">كتاب الزكاة</option>
@@ -393,24 +390,24 @@
                                 <option value="البيوع">كتاب البيوع</option>
                             </select>
                         </div>
-                        <button onclick="generateQuiz()" class="w-full md:w-auto bg-heritage-green text-white font-bold py-3 px-8 rounded-lg hover:bg-opacity-90 transition flex justify-center items-center gap-2 whitespace-nowrap shadow-md text-lg">
+                        <button onclick="generateQuiz()" class="w-full md:w-auto bg-heritage-green text-white font-bold py-3 md:py-4 px-6 md:px-8 rounded-lg hover:bg-opacity-90 active:scale-95 transition flex justify-center items-center gap-2 whitespace-nowrap shadow-md text-base md:text-lg">
                             <span id="btn-text-quiz">ولد سؤالاً جديداً</span>
                             <span id="loader-quiz" class="loader hidden" style="border-top-color: white;"></span>
                         </button>
                     </div>
 
                     <!-- Quiz Display Area -->
-                    <div id="quiz-container" class="hidden mt-6 bg-gray-50 p-6 rounded-xl border border-gray-200">
+                    <div id="quiz-container" class="hidden mt-6 bg-gray-50 p-4 md:p-6 rounded-xl border border-gray-200">
                         <div class="mb-4">
                             <span class="text-xs text-heritage-green font-bold bg-green-100 px-2 py-1 rounded">سؤال في: <span id="quiz-topic-display"></span></span>
                         </div>
-                        <h4 id="quiz-question" class="text-xl font-bold text-gray-800 mb-6 leading-relaxed"></h4>
+                        <h4 id="quiz-question" class="text-lg md:text-xl font-bold text-gray-800 mb-6 leading-relaxed"></h4>
                         <div id="quiz-options" class="space-y-3">
                             <!-- Options injected here -->
                         </div>
                         <div id="quiz-feedback" class="hidden mt-6 p-4 rounded-lg bg-blue-50 text-blue-900 border border-blue-200">
-                            <p class="font-bold mb-1 text-lg">الشرح والتعليل:</p>
-                            <p id="quiz-explanation" class="text-base"></p>
+                            <p class="font-bold mb-1 text-base md:text-lg">الشرح والتعليل:</p>
+                            <p id="quiz-explanation" class="text-sm md:text-base"></p>
                         </div>
                     </div>
                 </div>
@@ -425,8 +422,8 @@
 
     <footer class="bg-heritage-dark text-heritage-gold py-8 mt-8">
         <div class="container mx-auto px-4 text-center">
-            <p class="text-2xl font-bold">"من يرد الله به خيراً يفقهه في الدين"</p>
-            <p class="text-sm mt-3 opacity-70">تم تصميم هذا الدليل لتسهيل طلب العلم - جميع الحقوق محفوظة لطلاب العلم</p>
+            <p class="text-xl md:text-2xl font-bold">"من يرد الله به خيراً يفقهه في الدين"</p>
+            <p class="text-xs md:text-sm mt-3 opacity-70">تم تصميم هذا الدليل لتسهيل طلب العلم - جميع الحقوق محفوظة لطلاب العلم</p>
         </div>
     </footer>
 
@@ -434,7 +431,7 @@
     <script>
         
         // ==========================================
-        // هام جداً: المفتاح الذي أضفته
+        // هام جداً: المفتاح
         // ==========================================
         const apiKey = "AIzaSyDhkGFc13w2LdwutszfiSt9ggtTMKzuy6Y"; 
         // ==========================================
@@ -575,7 +572,6 @@
 
                 // --- FIX: Clean response text before parsing ---
                 let cleanText = responseText.trim();
-                // Remove markdown code blocks if present
                 if (cleanText.startsWith('```json')) {
                     cleanText = cleanText.replace(/^```json/, '').replace(/```$/, '');
                 } else if (cleanText.startsWith('```')) {
@@ -596,8 +592,8 @@
 
                 currentQuizData.options.forEach((opt, index) => {
                     const div = document.createElement('div');
-                    div.className = "quiz-option bg-white border border-gray-300 p-4 rounded-lg flex items-center";
-                    div.innerHTML = `<span class="w-8 h-8 rounded-full border border-gray-400 flex items-center justify-center mr-3 text-sm font-bold text-gray-600 ml-3 shrink-0">${index + 1}</span> <span class="text-lg">${opt}</span>`;
+                    div.className = "quiz-option bg-white border border-gray-300 p-4 rounded-lg flex items-center shadow-sm";
+                    div.innerHTML = `<span class="w-8 h-8 rounded-full border border-gray-400 flex items-center justify-center mr-3 text-sm font-bold text-gray-600 ml-3 shrink-0">${index + 1}</span> <span class="text-base md:text-lg">${opt}</span>`;
                     div.onclick = () => checkAnswer(index, div);
                     optionsContainer.appendChild(div);
                 });
@@ -878,6 +874,9 @@
 
             // Use the new font family in Chart.js
             Chart.defaults.font.family = "'Rubik', sans-serif";
+            
+            // Adjust chart options for mobile
+            const isMobile = window.innerWidth < 768;
 
             chartInstance = new Chart(ctx, {
                 type: 'bubble',
@@ -911,14 +910,16 @@
                     },
                     scales: {
                         x: {
-                            title: { display: true, text: 'الإيجاز  <---------->  التفصيل والإطناب', font: { family: "'Rubik', sans-serif" } },
+                            title: { display: true, text: 'الإيجاز  <---------->  التفصيل والإطناب', font: { family: "'Rubik', sans-serif", size: isMobile ? 10 : 12 } },
                             min: -1, max: 1.5,
-                            grid: { color: '#eee' }
+                            grid: { color: '#eee' },
+                            ticks: { font: { size: isMobile ? 10 : 12 } }
                         },
                         y: {
-                            title: { display: true, text: 'حل الألفاظ  <---------->  ذكر الأدلة والتعليل', font: { family: "'Rubik', sans-serif" } },
+                            title: { display: true, text: 'حل الألفاظ  <---------->  ذكر الأدلة والتعليل', font: { family: "'Rubik', sans-serif", size: isMobile ? 10 : 12 } },
                             min: -1, max: 1.5,
-                            grid: { color: '#eee' }
+                            grid: { color: '#eee' },
+                            ticks: { font: { size: isMobile ? 10 : 12 } }
                         }
                     }
                 }
